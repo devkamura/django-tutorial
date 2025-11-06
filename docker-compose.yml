@@ -13,7 +13,7 @@ services:
   web:
     build: ./web
     container_name: django
-    command: gunicorn mysite.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn mysite.wsgi:application --bind 0.0.0.0:8000 --reload
     volumes:
       - ./web:/usr/src/app
       - ./secrets:/usr/src/app/secrets:ro
