@@ -16,18 +16,24 @@ services:
     command: gunicorn mysite.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - ./web:/usr/src/app
+      - ./secrets:/usr/src/app/secrets:ro
     expose:
       - "8000"
     depends_on:
       - db
+    environment:
+      - PGSERVICEFILE=/usr/src/app/secrets/.pg_service.conf
+      - PGSERVICE=my_service
 
   db:
     image: postgres:15.13
     container_name: postgres
+    ports:
+      - "5432:5432"
     environment:
-      POSTGRES_DB: mydb
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=django-tutorial
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
