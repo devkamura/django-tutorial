@@ -3,6 +3,9 @@ from django.http import HttpResponse, HttpResponseRedirect ,Http404
 from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
+from bokeh.plotting import figure
+from bokeh.embed import components
+
 
 
 from .models import Choice, Question
@@ -24,10 +27,37 @@ class DetailView(generic.DetailView):
         """
         return Question.objects.filter(pub_date__lte=timezone.now())
 
-
+ 
 class ResultsView(generic.DetailView):
     model = Question
     template_name = "polls/results.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        question = self.object
+
+        # グラフ作成
+        choices = question.choice_set.all()
+        x = [choice.choice_text for choice in choices]
+        y = [choice.votes for choice in choices]
+
+        p = figure(
+            x_range=x,
+            title=f"「{question.question_text}」の投票結果",
+            x_axis_label = "選択肢",
+            y_axis_label = "投票数",
+            toolbar_location = None,
+            tools=""
+        )
+        p.vbar(x=x, top=y, width=0.5, color="skyblue")
+
+        # HTML埋め込み用に変換
+        script, div = components(p)
+
+        # コンテキストに追加
+        context["bokeh_script"] = script
+        context["bokeh_div"] = div
+        return context
 
 
 def vote(request, question_id):
